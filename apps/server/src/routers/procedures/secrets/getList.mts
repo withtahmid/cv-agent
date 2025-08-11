@@ -4,7 +4,23 @@ import { safeAwait } from "../../../utils/safeAwait.mjs";
 import { TRPCError } from "@trpc/server";
 
 const getSecretList = pseudoAuthorizedProcedure
-    .output(z.any())
+    .output(
+        z.array(
+            z.object({
+                id: z.number(),
+                is_active: z.boolean(),
+                key: z.string(),
+                name: z.string(),
+                type: z.enum([
+                    "GEMINI",
+                    "OCR",
+                    "SHEET_CONFIG",
+                    "SHEET_ID",
+                    "SHEET_NAME",
+                ]),
+            })
+        )
+    )
     .query(async ({ ctx }) => {
         console.log("Fetching secrets list");
         const { data, error } = await safeAwait(
