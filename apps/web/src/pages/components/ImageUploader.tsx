@@ -1,13 +1,12 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import { compressImageToBase64 } from "../utils/compressImage";
 import { trpc, type RouterOutput } from "../../trpc";
+import Configs from "./Configs";
 
 type ImageFile = {
     file: File;
     url: string;
 };
-
-type Config = RouterOutput["secrets"]["list"][number];
 
 export default function ImageDropzone() {
     const [files, setFiles] = useState<ImageFile[]>([]);
@@ -15,8 +14,6 @@ export default function ImageDropzone() {
     const [errorData, setErrorData] = useState<any>({});
     const inputRef = useRef<HTMLInputElement | null>(null);
     const [timer, setTimer] = useState<number | null>(null);
-
-    const [configs, setConfigs] = useState<Config[]>([]);
 
     const onFiles = useCallback((fileList: FileList) => {
         const arr: ImageFile[] = Array.from(fileList)
@@ -53,22 +50,6 @@ export default function ImageDropzone() {
         URL.revokeObjectURL(removed.url);
         setFiles((prev) => prev.filter((_, i) => i !== index));
     };
-
-    const {
-        data: secretList,
-        error: secretListError,
-        refetch: refetchSecrets,
-        // isFetching: isFetchingSecrets,
-    } = trpc.secrets.list.useQuery();
-
-    useEffect(() => {
-        if (secretList) {
-            setConfigs(secretList);
-        }
-        if (secretListError) {
-            console.error("Failed to fetch secrets:", secretListError);
-        }
-    }, [secretList, secretListError]);
 
     // Example button to refetch secrets:
     // <button onClick={() => refetchSecrets()} disabled={isFetchingSecrets}>Refetch Secrets</button>
@@ -136,134 +117,10 @@ export default function ImageDropzone() {
         }
     };
 
-    const toggleConfigActive = (id: number) => {
-        setConfigs((prev) =>
-            prev.map((cfg) =>
-                cfg.id === id ? { ...cfg, is_active: !cfg.is_active } : cfg
-            )
-        );
-    };
-
     return (
         <div className="max-w-5xl mx-auto p-4">
-            <div className="flex justify-between items-center mb-4">
-                <button className="btn btn-warning" onClick={openSettingsModal}>
-                    Settings
-                </button>
-            </div>
-            <dialog id="settings_modal" className="modal">
-                <div className="modal-box w-full max-w-3xl">
-                    <div>
-                        <h3 className="font-bold text-lg">Gemini API Keys</h3>
-                        {secretList && secretList.length > 0 && (
-                            <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
-                                <table className="table">
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                            <th>Name</th>
-                                            <th>Used Total</th>
-                                            <th>Used Today</th>
-                                            <th>Active</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {secretList
-                                            .filter((s) => s.type === "GEMINI")
-                                            .map((s, idx) => (
-                                                <tr>
-                                                    <th>{idx + 1}</th>
-                                                    <td>{s.name}</td>
-                                                    <td>{0}</td>
-                                                    <td>{0}</td>
-                                                    <td>
-                                                        <input
-                                                            type="radio"
-                                                            name="active_gemini_key"
-                                                            checked={
-                                                                s.is_active
-                                                            }
-                                                            onChange={() =>
-                                                                toggleConfigActive(
-                                                                    s.id
-                                                                )
-                                                            }
-                                                            className="radio radio-primary"
-                                                        />
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-lg">OCR API Keys</h3>
-                        {secretList && secretList.length > 0 && (
-                            <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
-                                <table className="table">
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                            <th>Name</th>
-                                            <th>Used Total</th>
-                                            <th>Used Today</th>
-                                            <th>Active</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {secretList
-                                            .filter((s) => s.type === "OCR")
-                                            .map((s, idx) => (
-                                                <tr>
-                                                    <th>{idx + 1}</th>
-                                                    <td>{s.name}</td>
-                                                    <td>{0}</td>
-                                                    <td>{0}</td>
-                                                    <td>
-                                                        <input
-                                                            type="radio"
-                                                            name="active_gemini_key"
-                                                            checked={
-                                                                s.is_active
-                                                            }
-                                                            onChange={() =>
-                                                                toggleConfigActive(
-                                                                    s.id
-                                                                )
-                                                            }
-                                                            className="radio radio-primary"
-                                                        />
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
-                    <div className="modal-action">
-                        <form method="dialog">
-                            <button
-                                onClick={() => refetchSecrets()}
-                                className="btn btn-secondary"
-                            >
-                                Refresh
-                            </button>
-                            <button
-                                onClick={closeSettingsModal}
-                                className="btn"
-                            >
-                                Close
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </dialog>
-
             <div
-                className={`border-2 border-dashed border-primary rounded-lg p-8 text-center cursor-pointer ${isPending ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
+                className={`border-2 border-dashed border-primary rounded-lg p-12 py-20  text-center cursor-pointer ${isPending ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onClick={handleBrowse}
@@ -332,17 +189,17 @@ export default function ImageDropzone() {
                         {files.map((f, idx) => (
                             <div
                                 key={f.url}
-                                className="card bg-base-100 shadow-sm"
+                                className="card card-compact bg-base-100 shadow-sm flex flex-col h-full"
                             >
-                                <div className="card-body p-2">
-                                    <div className="w-full h-28 bg-base-200 rounded overflow-hidden flex items-center justify-center">
-                                        <img
-                                            src={f.url}
-                                            alt={f.file.name}
-                                            className="object-cover w-full h-full"
-                                        />
-                                    </div>
-                                    <div className="mt-2 text-xs truncate">
+                                <div className="w-full h-40 bg-base-200 rounded-t overflow-hidden flex items-center justify-center">
+                                    <img
+                                        src={f.url}
+                                        alt={f.file.name}
+                                        className="object-cover w-full h-full"
+                                    />
+                                </div>
+                                <div className="flex-1 flex flex-col justify-between p-2">
+                                    <div className="text-xs truncate mt-2">
                                         {f.file.name}
                                     </div>
                                     <div className="card-actions justify-end mt-2">
@@ -360,7 +217,7 @@ export default function ImageDropzone() {
 
                     <div className="flex justify-around gap-2 mt-4">
                         <button
-                            className="btn btn-base w-xs"
+                            className="btn btn-base w-md"
                             onClick={handleClear}
                             disabled={isPending}
                         >
@@ -380,6 +237,8 @@ export default function ImageDropzone() {
                     </div>
                 </div>
             )}
+            <Configs />
+
             <dialog id="success_modal" className="modal">
                 <div className="modal-box w-full max-w-3xl">
                     <h3 className="font-bold text-lg">

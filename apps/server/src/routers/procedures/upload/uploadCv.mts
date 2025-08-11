@@ -24,17 +24,50 @@ const uploadCVProcedure = pseudoAuthorizedProcedure
     )
     .output(z.any())
     .mutation(async ({ ctx, input }) => {
+        const apiKeys = await ctx.qb
+            .selectFrom("api_keys")
+            .selectAll()
+            .where("type", "in", [
+                "GEMINI",
+                "OCR",
+                "SHEET_CONFIG",
+                "SHEET_ID",
+                "SHEET_NAME",
+            ])
+            .where("is_active", "=", true)
+            .execute();
+
+        const getKey = (type: string) => apiKeys.find((k) => k.type === type);
+
+        const GEMINI_API_KEY = getKey("GEMINI");
+        const OCR_API_KEY = getKey("OCR");
+        const SHEET_CONFIG = getKey("SHEET_CONFIG");
+        const SHEET_ID = getKey("SHEET_ID");
+        const SHEET_NAME = getKey("SHEET_NAME");
+        if (
+            !GEMINI_API_KEY ||
+            !OCR_API_KEY ||
+            !SHEET_CONFIG ||
+            !SHEET_ID ||
+            !SHEET_NAME
+        ) {
+            console.error(
+                "Missing required API keys for pseudo-authorized procedure"
+            );
+            throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message: "Required API keys are missing or inactive.",
+            });
+        }
+
         let extractedTexts: string = "";
         for (const image of input) {
             const sizeInMB = (image.image.length / (1024 * 1024)).toFixed(2);
-            logger.silly(
-                `Processing image: ${image.filename}, size: ${sizeInMB} MB`
-            );
+            // logger.silly(
+            //     `Processing image: ${image.filename}, size: ${sizeInMB} MB`
+            // );
             const { error, data } = await safeAwait(
-                extractTextFromBase64Image(
-                    image.image,
-                    ctx.config.OCR_API_KEY.key
-                )
+                extractTextFromBase64Image(image.image, OCR_API_KEY.key)
             );
             if (error) {
                 logger.error(
@@ -51,7 +84,7 @@ const uploadCVProcedure = pseudoAuthorizedProcedure
         }
         const prompt = generatePrompt(extractedTexts);
         const { error: promptError, data } = await safeAwait(
-            executePrompt(prompt, ctx.config.GEMINI_API_KEY.key)
+            executePrompt(prompt, GEMINI_API_KEY.key)
         );
         if (promptError) {
             throw new TRPCError({
@@ -74,9 +107,9 @@ const uploadCVProcedure = pseudoAuthorizedProcedure
         const { error: insertError } = await safeAwait(
             insertToGoogleSheets({
                 extracted: formattedData,
-                SHEET_CONFIG: ctx.config.SHEET_CONFIG.key,
-                SHEET_ID: ctx.config.SHEET_ID.key,
-                SHEET_NAME: ctx.config.SHEET_NAME.key,
+                SHEET_CONFIG: SHEET_CONFIG.key,
+                SHEET_ID: SHEET_ID.key,
+                SHEET_NAME: SHEET_NAME.key,
             })
         );
         if (insertError) {
@@ -86,7 +119,16 @@ const uploadCVProcedure = pseudoAuthorizedProcedure
                 cause: insertError,
             });
         }
-
+        await ctx.qb
+            .insertInto("requests")
+            .values({
+                GEMINI_ID: GEMINI_API_KEY.key,
+                OCR_ID: OCR_API_KEY.key,
+                SHEET_NAME: SHEET_NAME.key,
+                SHEET_ID: SHEET_ID.key,
+                num_file: input.length,
+            })
+            .execute();
         return formattedData;
     });
 

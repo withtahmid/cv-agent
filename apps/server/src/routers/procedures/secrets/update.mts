@@ -13,11 +13,19 @@ const updateSecrets = pseudoAuthorizedProcedure
         )
     ) // Assuming no input is needed, adjust as necessary
     .output(z.any())
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
         const { data, error } = await safeAwait(
             ctx.qb.transaction().execute(async (trx) => {
                 await trx
                     .updateTable("api_keys")
+                    .where((eb) =>
+                        eb.or([
+                            eb("type", "=", "GEMINI"),
+                            eb("type", "=", "OCR"),
+                            eb("type", "=", "SHEET_ID"),
+                            eb("type", "=", "SHEET_NAME"),
+                        ])
+                    )
                     .set({ is_active: false })
                     .execute();
                 await trx

@@ -11,6 +11,18 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   ? ColumnType<S, I | undefined, U>
   : ColumnType<T, T | undefined, T>;
 
+export type Json = JsonValue;
+
+export type JsonArray = JsonValue[];
+
+export type JsonObject = {
+  [x: string]: JsonValue | undefined;
+};
+
+export type JsonPrimitive = boolean | number | string | null;
+
+export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
+
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export interface ApiKeys {
@@ -23,13 +35,14 @@ export interface ApiKeys {
 
 export interface Requests {
   created_at: Generated<Timestamp>;
-  error_message: string | null;
+  error: Json | null;
+  finished_at: Timestamp | null;
   GEMINI_ID: string;
   id: Generated<number>;
   num_file: number;
   OCR_ID: string;
+  SHEET_ID: string;
   SHEET_NAME: string;
-  time_taken: number;
 }
 
 export interface DB {
