@@ -1,0 +1,50 @@
+services:
+    postgres:
+        image: postgres:15
+        container_name: home-postgres
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: postgres
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        networks:
+            - home_mono
+        ports:
+            - 5432:5432
+
+    mono:
+        container_name: home-mono
+        build:
+            context: .
+            dockerfile: Dockerfile
+
+        restart: unless-stopped
+        working_dir: /app
+        command: pnpm dev
+
+        ports:
+            - target: 3000
+              published: 3000
+
+            - target: 5173
+              published: 5173
+
+        env_file:
+            - ./.env
+
+        volumes:
+            - ./:/app
+        depends_on:
+            - postgres
+
+        networks:
+            - home_mono
+networks:
+    home_mono:
+        name: home_mono
+        driver: bridge
+
+volumes:
+    postgres_data:
