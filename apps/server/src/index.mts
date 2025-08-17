@@ -1,6 +1,7 @@
 import * as trpcExpress from "@trpc/server/adapters/express";
 import cors from "cors";
 import express from "express";
+import type { Express } from "express";
 import { expressHandler } from "trpc-playground/handlers/express";
 import { playgroundEndpoint, trpcApiEndpoint } from "./config/endpoint.mjs";
 import { appRouter, AppRouter } from "./routers/index.mjs";
@@ -11,7 +12,8 @@ import upload from "./trpc/middlewares/upload.mjs";
 
 await run_bootstrap();
 
-const app = express();
+const app: Express = express();
+
 app.use(cors());
 app.use(express.json({ limit: "50mb" })); // or higher if needed
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -50,3 +52,5 @@ const port = process.env.SERVER_PORT;
 app.listen(port, () => {
     logger.info(`SERVER STARTED LISTENING ON PORT: ${port}`);
 });
+
+export default app;
