@@ -24,7 +24,6 @@
         "@types/node": "^20.12.2",
         "linkemon": "^0.2.0",
         "ts-node": "^10.9.2",
-        "trpc-playground": "^1.0.4",
         "typescript": "^5.4.3"
     },
     "dependencies": {

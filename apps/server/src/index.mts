@@ -2,7 +2,7 @@ import * as trpcExpress from "@trpc/server/adapters/express";
 import cors from "cors";
 import express from "express";
 import type { Express } from "express";
-import { expressHandler } from "trpc-playground/handlers/express";
+// import { expressHandler } from "trpc-playground/handlers/express";
 import { playgroundEndpoint, trpcApiEndpoint } from "./config/endpoint.mjs";
 import { appRouter, AppRouter } from "./routers/index.mjs";
 import { createContext } from "./trpc/context.mjs";
@@ -36,16 +36,16 @@ app.use(
     })
 );
 
-if (process.env.NODE_ENV === "development") {
-    app.use(
-        playgroundEndpoint,
-        await expressHandler({
-            trpcApiEndpoint,
-            playgroundEndpoint,
-            router: appRouter,
-        })
-    );
-}
+// if (process.env.NODE_ENV === "development") {
+//     app.use(
+//         playgroundEndpoint,
+//         await expressHandler({
+//             trpcApiEndpoint,
+//             playgroundEndpoint,
+//             router: appRouter,
+//         })
+//     );
+// }
 
 const port = process.env.SERVER_PORT;
 
