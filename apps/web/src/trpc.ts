@@ -2,7 +2,7 @@ import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "../../server/src/routers/index.mjs";
 import { createTRPCReact } from "@trpc/react-query";
 import { httpBatchLink } from "@trpc/client";
-import { baseBackendURL } from "./config/urls";
+import { getBackendBaseURL } from "./config/urls";
 
 export const trpc = createTRPCReact<AppRouter>();
 
@@ -14,7 +14,7 @@ const getHeader = () => {
 export const trpcClient = trpc.createClient({
     links: [
         httpBatchLink({
-            url: `${baseBackendURL}/trpc`,
+            url: `${getBackendBaseURL()}/trpc`,
             headers: getHeader(),
         }),
     ],
