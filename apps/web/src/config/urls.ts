@@ -1,11 +1,11 @@
 import config from ".";
 
-// export const baseBackendURL = "https://mailreadreceipts.vercel.app";
-export const baseBackendURL = `${window.location.protocol}//${window.location.hostname}:${config.SERVER_PORT}`;
-// config.NODE_ENV === "development"
-//     ? `${window.location.protocol}//${window.location.hostname}:${config.SERVER_PORT}`
-//     : config.NODE_ENV === "test"
-//       ? "test url"
-//       : config.NODE_ENV === "production"
-//         ? "production url"
-//         : "invalid url";
+export const getBackendBaseURL = (): string => {
+    if (
+        window.location.hostname.includes("github.io") ||
+        window.location.hostname.includes("githubusercontent.com")
+    ) {
+        return "https://mailreadreceipts.vercel.app";
+    }
+    return `${window.location.protocol}//${window.location.hostname}:${config.SERVER_PORT}`;
+};
