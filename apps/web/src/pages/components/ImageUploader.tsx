@@ -1,6 +1,6 @@
-import React, { useRef, useState, useCallback, useEffect } from "react";
+import React, { useCallback, useRef, useState } from "react";
+import { trpc } from "../../trpc";
 import { compressImageToBase64 } from "../utils/compressImage";
-import { trpc, type RouterOutput } from "../../trpc";
 import Configs from "./Configs";
 
 type ImageFile = {

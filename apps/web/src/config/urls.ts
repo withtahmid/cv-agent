@@ -1,6 +1,7 @@
 import config from ".";
 
-export const baseBackendURL = "https://mailreadreceipts.vercel.app";
+// export const baseBackendURL = "https://mailreadreceipts.vercel.app";
+export const baseBackendURL = `${window.location.protocol}//${window.location.hostname}:${config.SERVER_PORT}`;
 // config.NODE_ENV === "development"
 //     ? `${window.location.protocol}//${window.location.hostname}:${config.SERVER_PORT}`
 //     : config.NODE_ENV === "test"
