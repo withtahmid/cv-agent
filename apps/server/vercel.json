@@ -10,6 +10,5 @@
             "src": "/(.*)",
             "dest": "/api/index.js"
         }
-    ],
-    "buildCommand": "pnpm build"
+    ]
 }
