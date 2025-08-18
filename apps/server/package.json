@@ -2,7 +2,7 @@
     "name": "backend",
     "version": "1.0.0",
     "description": "",
-    "main": "dist/index.mjs",
+    "main": "index.mjs",
     "scripts": {
         "start": "NODE_OPTIONS='--dns-result-order=ipv4first' node .",
         "start:watch": "NODE_OPTIONS='--dns-result-order=ipv4first' nodemon --inspect=0.0.0.0:9230 .",
